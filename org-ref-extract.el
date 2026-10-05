@@ -136,7 +136,7 @@ and return the buffer."
   (interactive "MPMLR URL: ")
   (org-ref--extract-entry-from-html
    (org-ref--html-buffer url)
-   '("id=\"bibtex\">\n\\(@.+\\(\n.*?\\)+?\\)\n</" . 1)
+   '("id=\"bibtex\">\n?\\(@.+\\(\n.*?\\)+?\\)\n</" . 1)
    '("{\\(http.+\\.pdf\\)}" . 1)
    ;; Should we proactively download supplementary materials too?
    '("supp" . ("href=\"\\(https?://proceedings\\.mlr\\.press/[^\"]+?-supp[^\"]*?\\)\".*?>Supplementary PDF</" . 1))))
