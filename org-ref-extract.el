@@ -142,12 +142,13 @@ and return the buffer."
    '("supp" . ("href=\"\\(https?://proceedings\\.mlr\\.press/[^\"]+?-supp[^\"]*?\\)\".*?>Supplementary PDF</" . 1))))
 
 
-(defun org-ref-extract-from-neurips (url)
-  "At point, create a BibTeX entry for the given NeurIPS Abstract URL."
-  (interactive "MNeurIPS Abstract URL: ")
-  (let ((hash (progn (string-match "/\\([0-9a-f]+\\)-" url)
+(defun org-ref-extract-from-proccc (url)
+  "At point, create a BibTeX entry for the given NeurIPS or ICLR Abstract URL."
+  (interactive "MNeurIPS or ICLR Abstract URL: ")
+  (let ((proccc-url (progn (string-match "\\(http[s]?://[^/]+\\.cc\\)/" url)
+			   (match-string 1 url)))
+	(hash (progn (string-match "/\\([0-9a-f]+\\)-" url)
 		     (match-string 1 url)))
-	(neurips-url "https://proceedings.neurips.cc")
 	(html-buffer (org-ref--html-buffer url))
 	(bibtex))
     (with-current-buffer html-buffer
@@ -156,23 +157,23 @@ and return the buffer."
       (let ((bibtex-url (match-string 1)))
 	(with-temp-buffer
 	  (url-insert
-	   (url-retrieve-synchronously (concat neurips-url bibtex-url)))
+	   (url-retrieve-synchronously (concat proccc-url bibtex-url)))
 	  (setq bibtex (buffer-string)))))
     (org-ref--extract-entry-from-html
      html-buffer
      bibtex
-     (concat neurips-url
+     (concat proccc-url
 	     (org-ref--extract html-buffer
 			       "href=[\"']\\([^\"']+-Paper[^\"']*\\)[\"']" 1))
      (cons "url" url)
-     '("abstract" . ("<h4>Abstract</h4>[ \n]*?\\(<p>\\)+\\(.+?\\)</p>" . 2))
+     '("abstract" . ("<p class=\"paper-abstract\"><p>\\([^<]+\\)" . 1))
      ;; Should we proactively download supplementary materials too?
      (cons "supp"
 	   (if-let*
 	       ((supp (org-ref--extract
 		       html-buffer
 		       "href=[\"']\\([^\"']+-Supplemental[^\"']*\\)[\"']" 1)))
-	       (concat neurips-url supp))))))
+	       (concat proccc-url supp))))))
 
 
 (defun org-ref-extract-from-cvf (url)
